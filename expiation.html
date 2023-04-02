@@ -49,9 +49,9 @@
 
 ┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋
 
--X??-
+-XOX-
 -OIO-
----?-
+--FO-
 
 positive direction is bottom right, south west
 
@@ -69,17 +69,40 @@ I is the initial node, "0,0" (x,y; change in "x" is a horizontal change, "y" ver
         {answer: "Ir por la puerta al este →", jump: "0,0"},
         {answer: "Ir por la puerta al norte ↑", jump: "-1,-1"},
       ]},
-      "-1,-1": {question: "En esta sala hay un cuadro de aquella vez que empujaste a tu pareja en una discusión. Eras más feliz cuando no te acordabas de esto. Duele recordarlo. Hay unos cuantos maniquíes puestos como si mirasen al cuadro.", answers: [
+      "-1,-1": {question: "En esta sala hay un cuadro de aquella vez que empujaste a tu pareja en una discusión. Eras más feliz cuando no te acordabas de esto. Duele recordarlo. Hay unos cuantos maniquíes puestos como si mirasen al cuadro. Son maniquíes, pero te molesta que miren la imagen.", answers: [
         {answer: "Ir por la puerta al este →", jump: "0,-1"},
         {answer: "Ir por la puerta al sur ↓", jump: "-1,0"},
       ]},
       "1,0": {question: "El suelo es de un color diferente aquí. Ves que tienes barro en los zapatos. Ves que también tienes barro en los pantalones y la camisa.", answers: [
-        {answer: "Ir por la puerta al oeste ←", jump: "-1,0"},
+        {answer: "Ir por la puerta al oeste ←", jump: "0,0"},
+        {answer: "Ir por la puerta al norte ↑", jump: "1,-1"},
+        {answer: "Ir por la puerta al sur ↓", jump: "1,1"},
+      ]},
+      "1,1": {question: "Al oeste ← hay una puerta más grande y decorada.", answers: [
+        {answer: "Entrar por la puerta grande del oeste ←", jump: "0,1", condition: function() {
+            for (const key_room of key_rooms) {
+              if (!(key_room in visited_rooms)) {
+                console.log("room " + key_room + " was not visited");
+                return false;
+              }
+            }
+            return true;
+          }},
         {answer: "Ir por la puerta al norte ↑", jump: "1,0"},
+      ]},
+      "1,-1": {question: "Este lugar te hace sentirte a solas. Echas de menos a tu pareja. Aunque habéis tenido roces importantes, también echas de menos a tu familia hasta cierto punto. Ahora te gustaría estar con tu pareja, pero este lugar no te deja irte.", answers: [
+        {answer: "Ir por la puerta al oeste ←", jump: "0,-1"},
         {answer: "Ir por la puerta al sur ↓", jump: "1,0"},
       ]},
+      "0,-1": {question: "En la pared del norte hay un móvil reproduciendo una voz por el altavoz. Se oye a alguien llorar. La voz te suena pero no acabas de identificar quién es.", answers: [
+        {answer: "Ir por la puerta al oeste ←", jump: "-1,-1"},
+        {answer: "Ir por la puerta al este →", jump: "1,-1"},
+      ]},
+      "0,1": {question: "Despiertas. Estás en el barro. Oyes sirenas de ambulancia. Tu cuerpo te duele por todas partes pero sientes un profundo alivio.",
+        answers: []
+      },
     };
-    const key_rooms = ["-1,-1"];
+    const key_rooms = ["-1,-1", "1,-1"];
 
     var question_number = 0;
     var visited_rooms = {}
@@ -97,22 +120,22 @@ I is the initial node, "0,0" (x,y; change in "x" is a horizontal change, "y" ver
       answers = get_answers(id);
       if (answers === undefined) {
         console.log("broken jump to id: " + id);
-
         const question = parent.appendChild(document.createElement("div"));
-        question.appendChild(document.createElement('p')).innerHTML = "Logro desbloqueado: Has encontrado una puerta que no lleva a ninguna parte! Cuéntale al programador de este juego
-
+        question.appendChild(document.createElement('p')).innerHTML = "Logro desbloqueado: Has encontrado una puerta que no lleva a ninguna parte! Cuéntale tu hazaña al programador de este juego en <a href=https://github.com/jmmut/cabezazo/issues/new>https://github.com/jmmut/cabezazo/issues/new</a>, y dile que la sala '" + id + "' no existe";
       } else {
         visited_rooms[id] = 1;
         const question = parent.appendChild(document.createElement("div"));
         question.className = "question";
         question.appendChild(document.createElement('p')).innerHTML = get_question(id);
         ++question_number;
-        answers.forEach(({answer, jump}) => {
-          add_radio_to(question, id, answer, (event) => {
-            remove_later_questions(parent);
-            add_question(jump, parent);
-          });
-        });
+        for (const {answer, jump, condition} of answers) {
+          if (condition === undefined || condition()) {
+            add_radio_to(question, id, answer, (event) => {
+              remove_later_questions(parent);
+              add_question(jump, parent);
+            });
+          }
+        }
       }
     }
 
