@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html lang="es">
+
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8">
+  <title>Expiación</title>
+  <link rel="icon" href="data:,"> <!-- don't ask for favicon -->
+  <style>
+    div,
+    p,
+    button {
+      /*font-size: 15px;*/
+      text-align: left;
+      margin-left: 15%;
+      margin-right: 15%;
+    }
+    .question {
+      margin-left: 0%;
+      margin-right: 0%;
+    }
+    .answer {
+      margin-left: 20%;
+      margin-right: 20%;
+    }
+    label, li {
+      /*font-size: 15px;*/
+    }
+    h2 {
+      text-align: center;
+    }
+    body {
+      background-color: #bbbbbb;
+      color: #000000;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div id="explanation_div">
+    <h2>
+      Expiación
+    </h2>
+  </div>
+  <div id=questions>
+  </div>
+<!--
+
+┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋
+
+-X??-
+-OIO-
+---?-
+
+positive direction is bottom right, south west
+
+I is the initial node, "0,0" (x,y; change in "x" is a horizontal change, "y" vertical)
+
+-->
+
+  <script>
+    const graph = {
+      "0,0": {question: "Estás en una sala con dos puertas. Hay una brújula pintada en suelo.", answers: [
+        {answer: "Ir por la puerta al oeste ←", jump: "-1,0"},
+        {answer: "Ir por la puerta al este →", jump: "1,0"},
+      ]},
+      "-1,0": {question: "En esta sala hay dos puertas también. ¿Por qué no hay ventanas? Lo último que recuerdas es que estabas conduciendo.", answers: [
+        {answer: "Ir por la puerta al este →", jump: "0,0"},
+        {answer: "Ir por la puerta al norte ↑", jump: "-1,-1"},
+      ]},
+      "-1,-1": {question: "En esta sala hay un cuadro de aquella vez que empujaste a tu pareja en una discusión. Eras más feliz cuando no te acordabas de esto. Duele recordarlo. Hay unos cuantos maniquíes puestos como si mirasen al cuadro.", answers: [
+        {answer: "Ir por la puerta al este →", jump: "0,-1"},
+        {answer: "Ir por la puerta al sur ↓", jump: "-1,0"},
+      ]},
+      "1,0": {question: "El suelo es de un color diferente aquí. Ves que tienes barro en los zapatos. Ves que también tienes barro en los pantalones y la camisa.", answers: [
+        {answer: "Ir por la puerta al oeste ←", jump: "-1,0"},
+        {answer: "Ir por la puerta al norte ↑", jump: "1,0"},
+        {answer: "Ir por la puerta al sur ↓", jump: "1,0"},
+      ]},
+    };
+    const key_rooms = ["-1,-1"];
+
+    var question_number = 0;
+    var visited_rooms = {}
+
+    function get_question(id) {
+      return graph[id]?.question;
+    }
+    function get_answers(id) {
+      return graph[id]?.answers;
+    }
+
+    add_question("0,0", document.getElementById("questions"));
+    
+    function add_question(id, parent) {
+      answers = get_answers(id);
+      if (answers === undefined) {
+        console.log("broken jump to id: " + id);
+
+        const question = parent.appendChild(document.createElement("div"));
+        question.appendChild(document.createElement('p')).innerHTML = "Logro desbloqueado: Has encontrado una puerta que no lleva a ninguna parte! Cuéntale al programador de este juego
+
+      } else {
+        visited_rooms[id] = 1;
+        const question = parent.appendChild(document.createElement("div"));
+        question.className = "question";
+        question.appendChild(document.createElement('p')).innerHTML = get_question(id);
+        ++question_number;
+        answers.forEach(({answer, jump}) => {
+          add_radio_to(question, id, answer, (event) => {
+            remove_later_questions(parent);
+            add_question(jump, parent);
+          });
+        });
+      }
+    }
+
+    function remove_later_questions(question) {
+      Array.from(question.children).forEach(element => {
+        if (element.className === "question") {
+          element.remove();
+        }
+      });
+    }
+
+    function add_radio_to(parent, radios_id, text, onClick) {
+      let alternative = parent.appendChild(document.createElement("div"));
+      alternative.className = "answer"
+      let input = alternative.appendChild(document.createElement("input"));
+      input.type = "radio";
+      input.name = "question_" + question_number;
+      input.id = text;
+      input.value = text;
+      input.addEventListener("change", onClick);
+
+      const label = alternative.appendChild(document.createElement("label"));
+      label.htmlFor = text; // pointing to input.id
+      label.innerHTML = text;
+      label.addEventListener("change", onClick);
+    }
+    
+  </script>
+</body>
