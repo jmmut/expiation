@@ -54,14 +54,18 @@ I is the initial node, "0,0,0" (l,x,y; change in "x" is a horizontal change, "y"
 F is the final node of each level
 
 l:0
--XOX-
+-XFX-
 -OIO-
----F-
+----
 
 l:1
 -F---
 -OX--
 -XI--
+
+--I--
+--F--
+-----
 
 -->
 
@@ -108,12 +112,12 @@ l:1
         {answer: "Ir por la puerta al oeste ←", jump: "0,0,-1"},
         {answer: "Ir por la puerta al sur ↓, que tiene una vidriera de dos personas cogidas de la mano", jump: "0,1,0"},
       ]},
-      "0,0,-1": {question: "Al sur ↓ hay escaleras que bajan hasta una puerta más grande y decorada, que tiene una cerradura dorada y otra plateada.",
+      "0,0,-1": {question: "Al norte ↑ hay escaleras que bajan hasta una puerta más grande y decorada, que tiene una cerradura dorada y otra plateada.",
           effect: function() {
             document.getElementById("explanation_div").innerHTML = "<h2>Parte 1: Vergüenza</h2>"
           },
         answers: [
-          {answer: "Bajar las escaleras y entrar por la puerta al sur ↓", jump: "1,0,1", condition: part_1_complete},
+          {answer: "Bajar las escaleras y entrar por la puerta al norte ↑", jump: "1,0,1", condition: part_1_complete},
           {answer: "Ir por la puerta al este →", jump: "0,1,-1"},
           {answer: "Ir por la puerta al oeste ←", jump: "0,-1,-1"},
         ]
@@ -127,7 +131,7 @@ l:1
         answers: [
           {answer: "Si hay gente por el oeste hay que ayudarles ←", jump: "1,-1,1"},
           {answer: "Seguro que los gritos son una trampa. El laberinto al norte es más seguro ↑", jump: "1,0,0"},
-          {answer: "Subir por el este →", jump: "0,1,1"}
+          {answer: "Subir por el sur ↓", jump: "0,0,-1"}
         ]
       },
       "1,-1,1": {question: function() {
@@ -160,9 +164,47 @@ l:1
         ]
       },
       "1,-1,-1": {question: "En una mesita cerca de la pared hay un móvil reproduciendo una voz por el altavoz. Se oye a alguien llorar. La voz te suena pero no acabas de identificar quién es.", answers: [
-        {answer: "Bajar las escaleras al este →", jump: "end"},
+        {answer: "Bajar las escaleras al este →", jump: "2,0,-1"},
         {answer: "Ir por la puerta al sur ↓", jump: "1,-1,0"},
       ]},
+
+
+      // level 2 ******************************************************************
+      "2,0,-1": {question: function(){
+          let intro = "Aquí solo hay un cartelito que dice: ";
+          let message = "";
+          if (inventory["neurotic"] >= 1) {
+            message += "No puedes vivirlo todo; quizá tengas que aprender a escoger qué vidas no vas a experimentar";
+            if (inventory["shoes"] < 2) {
+              message += ", o acabarás sin zapatos. ";
+            } else if (inventory["trouser_holes"] > 2) {
+              message += ", o acabarás sin pantalones. ";
+            } else {
+              message += ". ";
+            }
+          }
+          if (inventory["extroverted"] < 0) {
+            message += "Nacemos y morimos solos; compartir experiencias con otros es lo único valioso que podemos dejar. ";
+          }
+          if (inventory["extroverted"] > 0) {
+            message += "Quizá debas aprender a afrontar retos sin depender de los demás. ";
+          }
+          if (message === "") {
+            if (inventory["open"] > 0) {
+              message += "¿Disfrutas de los pequeños placeres de cada día?";
+            } else if (inventory["open"] < 0) {
+              message += "¿Ves más allá de las tareas de cada día?";
+            } else {
+              message += "¿Qué objetivos quieres cumplir en tu vida?";
+            }
+          }
+          return intro + message;
+        },
+        effect: function() {
+          document.getElementById("explanation_div").innerHTML = "<h2>Parte 3: Revelación</h2>"
+        },
+        answers: [{answer: "Ok", jump: "end"}]
+      },
       "end": {question: "Despiertas. Estás en el barro. Oyes sirenas de ambulancia. Ves que tu pareja está contigo, y no le ha pasado nada. Está mirándote y llorando mucho. Tu cuerpo te duele por todas partes pero sientes un profundo alivio.",
         effect: function() {
           document.getElementById("explanation_div").innerHTML = "<h2>Parte Final: Expiación</h2>"
@@ -220,7 +262,7 @@ l:1
       if (answers === undefined) {
         console.log("broken jump to id: " + id);
         const question = parent.appendChild(document.createElement("div"));
-        question.appendChild(document.createElement('p')).innerHTML = "Logro desbloqueado: Has encontrado una puerta que no lleva a ninguna parte! Cuéntale tu hazaña al programador de este juego en <a href=https://github.com/jmmut/cabezazo/issues/new>https://github.com/jmmut/cabezazo/issues/new</a>, y dile que la sala '" + id + "' no existe";
+        question.appendChild(document.createElement('p')).innerHTML = "Logro desbloqueado: Has encontrado una puerta que no lleva a ninguna parte! Cuéntale tu hazaña al programador de este juego en <a href=https://github.com/jmmut/expiation/issues/new>https://github.com/jmmut/expiation/issues/new</a>, y dile que la sala '" + id + "' no existe";
       } else {
         visited_rooms[id] = 1;
         run_effect(id);
