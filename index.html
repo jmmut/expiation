@@ -69,37 +69,53 @@ l:1
     const graph = {
       // level 0 ******************************************************************
       "0,0,0": {question: "Estás en una sala con dos puertas. Hay una brújula pintada en suelo.", answers: [
-        {answer: "Ir por la puerta al oeste ←", jump: "0,-1,0"},
-        {answer: "Ir por la puerta al este →", jump: "0,1,0"},
+        {answer: "Ir por la puerta al oeste ←, que tiene una vidriera con símbolos que no conoces.", jump: "0,-1,0"},
+        {answer: "Ir por la puerta al este →, que tiene una vidriera de dos personas cogidas de la mano", jump: "0,1,0"},
       ]},
-      "0,-1,0": {question: "En esta sala hay dos puertas también. ¿Por qué no hay ventanas? Lo último que recuerdas es que estabas conduciendo.", answers: [
+      "0,-1,0": {question: "En esta sala hay dos puertas también. ¿Por qué no hay ventanas? Lo último que recuerdas es que estabas conduciendo.",
+          effect:function() {
+            add_to_inventory({"open": 1, "conscientious": 1, "extroverted": -1, "agreeable": -1, "neurotic": 1});
+          }, answers: [
         {answer: "Ir por la puerta al este →", jump: "0,0,0"},
         {answer: "Ir por la puerta al norte ↑", jump: "0,-1,-1"},
       ]},
-      "0,-1,-1": {question: "En esta sala hay un cuadro de aquella vez que empujaste a tu pareja en una discusión. Eras más feliz cuando no te acordabas de esto. Duele recordarlo. Hay unos cuantos maniquíes puestos como si mirasen al cuadro. Son maniquíes, pero te molesta que miren la imagen.", answers: [
-        {answer: "Ir por la puerta al este →", jump: "0,0,-1"},
-        {answer: "Ir por la puerta al sur ↓", jump: "0,-1,0"},
+      "0,-1,-1": {question: function() {
+          let message = "En esta sala hay péndulos con coches de peluche colgados, balanceándose y chocando entre ellos. Recuerdas que siempre te reprochan que conduces de forma descuidada.";
+          if (inventory["key_1"] === 1) {
+            message += " Encuentras una llave dorada."
+          }
+          return message;
+        },
+        effect: function() {add_to_inventory({"key_1": 1});}, answers: [
+          {answer: "Ir por la puerta al este →", jump: "0,0,-1"},
+          {answer: "Ir por la puerta al sur ↓, que tiene una vidriera con símbolos que no conoces", jump: "0,-1,0"},
       ]},
-      "0,0,-1": {question: "En la pared del norte hay un móvil reproduciendo una voz por el altavoz. Se oye a alguien llorar. La voz te suena pero no acabas de identificar quién es.", answers: [
-        {answer: "Ir por la puerta al oeste ←", jump: "0,-1,-1"},
-        {answer: "Ir por la puerta al este →", jump: "0,1,-1"},
-      ]},
-      "0,1,-1": {question: "Este lugar te hace sentirte a solas. Ahora te gustaría estar con tu pareja, pero este lugar no te deja irte.", answers: [
-        {answer: "Ir por la puerta al oeste ←", jump: "0,0,-1"},
-        {answer: "Ir por la puerta al sur ↓", jump: "0,1,0"},
-      ]},
-      "0,1,0": {question: "El suelo es de un color diferente aquí. Ves que tienes barro en los zapatos. Ves que también tienes barro en los pantalones y la camisa.", answers: [
+      "0,1,0": {question: "Es una habitación vacía. Este lugar te hace sentirte a solas. Ahora te gustaría estar con tu pareja, pero este lugar no te deja irte.",
+        effect: function() {
+          add_to_inventory({"open": -1, "conscientious": 1, "extroverted": 1, "agreeable": 1, "neurotic": 1});
+        }, answers: [
         {answer: "Ir por la puerta al oeste ←", jump: "0,0,0"},
         {answer: "Ir por la puerta al norte ↑", jump: "0,1,-1"},
-        {answer: "Ir por la puerta al sur ↓", jump: "0,1,1"},
       ]},
-      "0,1,1": {question: "Al oeste ← hay escaleras que bajan hasta una puerta más grande y decorada.",
+      "0,1,-1": {question: function() {
+          let message = "En esta sala hay un cuadro de aquella vez que empujaste a tu pareja en una discusión. Eras más feliz cuando no te acordabas de esto. Duele recordarlo. Hay unos cuantos maniquíes puestos como si mirasen al cuadro. Son maniquíes, pero te molesta que miren la imagen.";
+          if (inventory["key_2"] === 1) {
+            message += " Encuentras una llave plateada."
+          }
+          return message;
+        },
+        effect: function() {add_to_inventory({"key_2": 1});}, answers: [
+        {answer: "Ir por la puerta al oeste ←", jump: "0,0,-1"},
+        {answer: "Ir por la puerta al sur ↓, que tiene una vidriera de dos personas cogidas de la mano", jump: "0,1,0"},
+      ]},
+      "0,0,-1": {question: "Al sur ↓ hay escaleras que bajan hasta una puerta más grande y decorada, que tiene una cerradura dorada y otra plateada.",
           effect: function() {
             document.getElementById("explanation_div").innerHTML = "<h2>Parte 1: Vergüenza</h2>"
           },
         answers: [
-          {answer: "Bajar las escaleras y entrar por la puerta del oeste ←", jump: "1,0,1", condition: part_1_complete},
-          {answer: "Ir por la puerta al norte ↑", jump: "0,1,0"},
+          {answer: "Bajar las escaleras y entrar por la puerta al sur ↓", jump: "1,0,1", condition: part_1_complete},
+          {answer: "Ir por la puerta al este →", jump: "0,1,-1"},
+          {answer: "Ir por la puerta al oeste ←", jump: "0,-1,-1"},
         ]
       },
 
@@ -118,7 +134,7 @@ l:1
           let intro = "Solo ves ratas. Los gritos vienen de algunas ratas que tienen cara humana, y te miran con cara angustiada. Mientras las mirabas, un par de ratas te roen un poco los pantalones.";
           return intro + " Tienes " + inventory["trouser_holes"] + " agujeros en los pantalones.";
         },
-        effect: function() {add_to_inventory({"agreeable": 1, "extroverted": 1, "conscientious": -1, "trouser_holes": 2, "neurotic": 1});}, answers: [
+        effect: function() {add_to_inventory({"conscientious": -1, "extroverted": 1, "agreeable": 1, "trouser_holes": 2, "neurotic": 1});}, answers: [
           {answer: "Ir al final del pasillo ↑", jump: "1,-1,0"},
           {answer: "Volver al principio del pasillo →", jump: "1,0,1"},
         ]
@@ -132,27 +148,38 @@ l:1
             return "El camino es increíblemente pegajoso y lo estas cruzando con los pies descalzos";
           }
         },
-        effect: function() {add_to_inventory({"agreeable": -1, "extroverted": -1, "conscientious": 1, "shoes": -1, "neurotic": 1});}, answers: [
+        effect: function() {add_to_inventory({"conscientious": 1, "extroverted": -1, "agreeable": -1, "shoes": -1, "neurotic": 1});}, answers: [
           {answer: "Ir al final del laberinto ←", jump: "1,-1,0"},
           {answer: "Volver al principio del laberinto ↓", jump: "1,0,1"},
         ]
       },
       "1,-1,0": {question: "Hay una puerta al norte. También puedes ver el final del pasillo de ratas y el final del laberinto.", answers: [
-          {answer: "Ir por la puerta del norte ↑", jump: "end"},
+          {answer: "Ir por la puerta al norte ↑", jump: "1,-1,-1"},
           {answer: "Volver por el laberinto →", jump: "1,0,0"},
           {answer: "Volver por el pasillo de ratas ↓", jump: "1,-1,1"}
         ]
       },
-      "end": {question: "Despiertas. Estás en el barro. Oyes sirenas de ambulancia. Ves que tu pareja está contigo, y no le ha pasado nada. Tu cuerpo te duele por todas partes pero sientes un profundo alivio.",
+      "1,-1,-1": {question: "En una mesita cerca de la pared hay un móvil reproduciendo una voz por el altavoz. Se oye a alguien llorar. La voz te suena pero no acabas de identificar quién es.", answers: [
+        {answer: "Bajar las escaleras al este →", jump: "end"},
+        {answer: "Ir por la puerta al sur ↓", jump: "1,-1,0"},
+      ]},
+      "end": {question: "Despiertas. Estás en el barro. Oyes sirenas de ambulancia. Ves que tu pareja está contigo, y no le ha pasado nada. Está mirándote y llorando mucho. Tu cuerpo te duele por todas partes pero sientes un profundo alivio.",
         effect: function() {
           document.getElementById("explanation_div").innerHTML = "<h2>Parte Final: Expiación</h2>"
         },
         answers: []
       },
     };
+    // car + labyrinth   { shoes: 1, open:  1, conscientious:  2, extroverted: -2, agreeable: -2, neurotic: -1, key_1: 1, key_2: 1 }
+    // hands + rats      { shoes: 2, open: -1, conscientious: -2, extroverted:  2, agreeable:  2, neurotic: -1, key_2: 1, key_1: 1, trouser_holes: 2 }
+    // hands + labyrinth { shoes: 1, open: -1, conscientious:  0, extroverted:  0, agreeable:  0, neurotic: -1, key_2: 1, key_1: 1 }
+    // car + rats        { shoes: 2, open:  1, conscientious: -2, extroverted:  0, agreeable:  0, neurotic: -1, key_1: 1, key_2: 1, trouser_holes: 2 }
+
+    // car + rats + lab     { shoes: 1, open:  1, conscientious: -1, extroverted: -1, agreeable: -1, neurotic:  0, key_1: 2, key_2: 1, trouser_holes: 2 }
+    // hands+car+hands+rats { shoes: 2, open: -1, conscientious:  0, extroverted:  2, agreeable:  2, neurotic:  1, key_2: 2, key_1: 1, trouser_holes: 2 }
     const key_rooms = ["0,-1,-1", "0,1,-1"];
     let visited_rooms = {};
-    let inventory = {"shoes": 2, "neurotic": -2};
+    let inventory = {"shoes": 2, "neurotic": -3, "conscientious": -2};
 
     function get_question(id) {
       return graph[id]?.question;
@@ -178,7 +205,7 @@ l:1
     }
 
     function part_1_complete() {
-      return true; // TODO: remove cheat
+      // return true; // TODO: remove cheat
       for (const key_room of key_rooms) {
         if (!(key_room in visited_rooms)) {
           console.log("room " + key_room + " was not visited");
