@@ -53,18 +53,21 @@ positive direction is bottom right, south west
 I is the initial node, "0,0,0" (l,x,y; change in "x" is a horizontal change, "y" vertical, "l" is for level)
 F is the final node of each level
 
+l:0
 -XOX-
 -OIO-
 ---F-
 
---F--
---X--
-FXI--
+l:1
+-F---
+-OX--
+-XI--
 
 -->
 
   <script>
     const graph = {
+      // level 0 ******************************************************************
       "0,0,0": {question: "Estás en una sala con dos puertas. Hay una brújula pintada en suelo.", answers: [
         {answer: "Ir por la puerta al oeste ←", jump: "0,-1,0"},
         {answer: "Ir por la puerta al este →", jump: "0,1,0"},
@@ -99,17 +102,47 @@ FXI--
           {answer: "Ir por la puerta al norte ↑", jump: "0,1,0"},
         ]
       },
-      "1,0,1": {question: "Aquí hay dos pasillos. Por el del oeste se oyen ratas y gritos de niños, y el del norte parece un laberinto.",
+
+      // level 1 ******************************************************************
+      "1,0,1": {question: "Aquí hay dos pasillos. Por el del oeste se oyen ratas y gritos de gente, y el del norte parece un laberinto.",
         effect: function() {
           document.getElementById("explanation_div").innerHTML = "<h2>Parte 2: Debilidad</h2>"
         },
         answers: [
-          {answer: "Si hay niños por el oeste hay que ayudarles ←", jump: "end"},
-          {answer: "Seguro que los gritos son una trampa. El laberinto al norte es más seguro ↑", jump: "end"},
+          {answer: "Si hay gente por el oeste hay que ayudarles ←", jump: "1,-1,1"},
+          {answer: "Seguro que los gritos son una trampa. El laberinto al norte es más seguro ↑", jump: "1,0,0"},
           {answer: "Subir por el este →", jump: "0,1,1"}
         ]
       },
-
+      "1,-1,1": {question: function() {
+          let intro = "Solo ves ratas. Los gritos vienen de algunas ratas que tienen cara humana, y te miran con cara angustiada. Mientras las mirabas, un par de ratas te roen un poco los pantalones.";
+          return intro + " Tienes " + inventory["trouser_holes"] + " agujeros en los pantalones.";
+        },
+        effect: function() {add_to_inventory({"agreeable": 1, "extroverted": 1, "conscientious": -1, "trouser_holes": 2, "neurotic": 1});}, answers: [
+          {answer: "Ir al final del pasillo ↑", jump: "1,-1,0"},
+          {answer: "Volver al principio del pasillo →", jump: "1,0,1"},
+        ]
+      },
+      "1,0,0": {question: function() {
+          if (inventory["shoes"] === 1) {
+            return "El camino es largo y el suelo cada vez está más pegajoso. El zapato derecho se te ha hundido hasta el tobillo y no lo puedes sacar. Ahora vas con el pie derecho descalzo.";
+          } else if (inventory["shoes"] === 0) {
+            return "El camino es incluso más pegajoso y desagradable que antes, y se te ha enganchado el zapato izquierdo también. Ahora vas con los dos pies descalzos";
+          } else {
+            return "El camino es increíblemente pegajoso y lo estas cruzando con los pies descalzos";
+          }
+        },
+        effect: function() {add_to_inventory({"agreeable": -1, "extroverted": -1, "conscientious": 1, "shoes": -1, "neurotic": 1});}, answers: [
+          {answer: "Ir al final del laberinto ←", jump: "1,-1,0"},
+          {answer: "Volver al principio del laberinto ↓", jump: "1,0,1"},
+        ]
+      },
+      "1,-1,0": {question: "Hay una puerta al norte. También puedes ver el final del pasillo de ratas y el final del laberinto.", answers: [
+          {answer: "Ir por la puerta del norte ↑", jump: "end"},
+          {answer: "Volver por el laberinto →", jump: "1,0,0"},
+          {answer: "Volver por el pasillo de ratas ↓", jump: "1,-1,1"}
+        ]
+      },
       "end": {question: "Despiertas. Estás en el barro. Oyes sirenas de ambulancia. Ves que tu pareja está contigo, y no le ha pasado nada. Tu cuerpo te duele por todas partes pero sientes un profundo alivio.",
         effect: function() {
           document.getElementById("explanation_div").innerHTML = "<h2>Parte Final: Expiación</h2>"
@@ -119,6 +152,7 @@ FXI--
     };
     const key_rooms = ["0,-1,-1", "0,1,-1"];
     let visited_rooms = {};
+    let inventory = {"shoes": 2, "neurotic": -2};
 
     function get_question(id) {
       return graph[id]?.question;
@@ -133,8 +167,18 @@ FXI--
       }
     }
 
+    function add_to_inventory(elements) {
+      for (const [elem_name, value] of Object.entries(elements)) {
+        if (elem_name in inventory) {
+          inventory[elem_name] += value;
+        } else {
+          inventory[elem_name] = value;
+        }
+      }
+    }
+
     function part_1_complete() {
-      // return true; // TODO: remove cheat
+      return true; // TODO: remove cheat
       for (const key_room of key_rooms) {
         if (!(key_room in visited_rooms)) {
           console.log("room " + key_room + " was not visited");
@@ -153,12 +197,14 @@ FXI--
       } else {
         visited_rooms[id] = 1;
         run_effect(id);
-        const question = parent.appendChild(document.createElement("div"));
-        question.className = "question";
-        question.appendChild(document.createElement('p')).innerHTML = get_question(id);
+        const question_div = parent.appendChild(document.createElement("div"));
+        question_div.className = "question";
+        let question = get_question(id);
+        const question_text = (typeof question === "function") ? question() : question;
+        question_div.appendChild(document.createElement('p')).innerHTML = question_text;
         for (const {answer, jump, condition} of answers) {
           if (condition === undefined || condition()) {
-            add_radio_to(question, id, answer, (event) => {
+            add_radio_to(question_div, id, answer, (event) => {
               remove_later_questions(parent);
               add_question(jump, parent);
             });
